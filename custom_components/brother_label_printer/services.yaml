@@ -1,0 +1,82 @@
+print_label:
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: brother_label_printer
+    text:
+      selector:
+        text:
+          multiline: true
+    image_path:
+      selector:
+        text:
+          multiline: false
+    blocks:
+      selector:
+        object:
+    alignment:
+      default: left
+      selector:
+        select:
+          options:
+            - value: left
+              label: Left
+            - value: center
+              label: Center
+            - value: right
+              label: Right
+    text_size:
+      default: normal
+      selector:
+        select:
+          options:
+            - value: small
+              label: Small
+            - value: normal
+              label: Normal
+            - value: large
+              label: Large
+    bold:
+      default: true
+      selector:
+        boolean:
+    tape_width_mm:
+      selector:
+        select:
+          options:
+            - "3.5"
+            - "6"
+            - "9"
+            - "12"
+            - "18"
+            - "24"
+    label_size:
+      selector:
+        select:
+          options:
+            - "12"
+            - "17x54"
+            - "17x87"
+            - "23x23"
+            - "29"
+            - "29x42"
+            - "29x90"
+            - "38"
+            - "39x48"
+            - "39x90"
+            - "50"
+            - "52x29"
+            - "54"
+            - "54x29"
+            - "60x86"
+            - "62"
+            - "62x29"
+            - "62x100"
+    copies:
+      selector:
+        number:
+          min: 1
+          max: 20
+          mode: box

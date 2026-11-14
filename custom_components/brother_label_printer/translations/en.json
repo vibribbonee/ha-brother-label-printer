@@ -1,0 +1,86 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add a Brother label printer",
+        "description": "Configure a QL-710W or PT-E550W reachable over Wi-Fi or Ethernet on raw TCP (usually port 9100).",
+        "data": {
+          "name": "Printer name",
+          "host": "Host or IP address",
+          "port": "TCP port",
+          "printer_model": "Printer model",
+          "label_size": "Default QL DK label media",
+          "tape_width_mm": "Default PT TZe tape width"
+        }
+      },
+      "confirm": {
+        "title": "Add discovered Brother printer",
+        "description": "Add {name} to Home Assistant?"
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to the printer. Check its address, port, and network connection."
+    },
+    "abort": {
+      "already_configured": "This printer is already configured.",
+      "unsupported_device": "This Brother printer model is not supported."
+    }
+  },
+  "exceptions": {
+    "invalid_print_input": {
+      "message": "Provide exactly one of text, image_path, or blocks."
+    },
+    "invalid_image_path": {
+      "message": "Could not read the image under /config/www: {error}"
+    },
+    "invalid_asset_path": {
+      "message": "Could not read the image or font file under /config/www: {error}"
+    }
+  },
+  "services": {
+    "print_label": {
+      "name": "Print label",
+      "description": "Print text, an image, or a composed sequence of content blocks on a configured Brother QL or P-touch printer.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Brother printer"
+        },
+        "text": {
+          "name": "Text",
+          "description": "Multi-line label text."
+        },
+        "image_path": {
+          "name": "Image path",
+          "description": "Image path relative to /config/www, for example labels/logo.png."
+        },
+        "blocks": {
+          "name": "Composed content",
+          "description": "Ordered text, image, and spacing blocks. Text blocks can have their own alignment, size, weight, and font. Asset paths are relative to /config/www."
+        },
+        "alignment": {
+          "name": "Text alignment",
+          "description": "Align text labels to the left, center, or right. Ignored for images."
+        },
+        "text_size": {
+          "name": "Text size",
+          "description": "Choose a preferred size; long text may be scaled down to fit. Ignored for images."
+        },
+        "bold": {
+          "name": "Bold text",
+          "description": "Use a heavier typeface for text labels. Ignored for images."
+        },
+        "tape_width_mm": {
+          "name": "PT tape width",
+          "description": "Select the TZe width loaded in a PT-E550W."
+        },
+        "label_size": {
+          "name": "QL DK media",
+          "description": "Select the DK roll or die-cut media loaded in a QL-710W."
+        },
+        "copies": {
+          "name": "Copies"
+        }
+      }
+    }
+  }
+}
