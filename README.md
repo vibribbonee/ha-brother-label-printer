@@ -1,10 +1,12 @@
 # Brother Network Label Printer
 
-Print labels on compatible Brother QL and PT printers over the local network.
+[![Add to Home Assistant Marketplace](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=vibribbonee&repository=ha-brother-label-printer&category=integration)
+
+Print labels over the local network. Tested with the **Brother PT-E550W** and **Brother QL-710W**.
 
 ## Setup
 
-Install the integration through HACS as a custom **Integration** repository when using a public copy, or copy `custom_components/brother_label_printer` into Home Assistant’s `custom_components` directory. Restart Home Assistant, then open **Settings → Devices & services → Add integration**. Choose Brother Network Label Printer and enter the printer model and address.
+Install the integration through the Home Assistant Marketplace using the button above, or copy `custom_components/brother_label_printer` into Home Assistant’s `custom_components` directory. Restart Home Assistant, then open **Settings → Devices & services → Add integration**. Choose Brother Network Label Printer and enter the printer model and address.
 
 For an upgrade, keep the existing integration entry so Home Assistant retains its configuration.
 
