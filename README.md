@@ -8,13 +8,13 @@ Print labels from Home Assistant dashboards and automations. Use it for pantry l
 
 ## Features
 
-- Print text or images, with controls for alignment, size, and copies.
-- Send jobs over your local network.
-- Tested with Brother PT-E550W tape and QL-710W roll printers.
+- **Print from Home Assistant.** Send text, images, or mixed layouts from actions and automations.
+- **Fit the label.** Choose alignment, text size, copies, and the loaded tape width or label size.
+- **Connect over the local network.** Supports the Brother PT-E550W (P-touch tape) and QL-710W (DK label rolls).
 
 ## Install
 
-Install from Home Assistant Marketplace and restart Home Assistant. Then go to **Settings → Devices & services → Add integration → Brother Network Label Printer**. Choose your printer model and enter its address. Keep your existing entry when upgrading.
+Install from Marketplace using the button above, then restart Home Assistant. Then go to **Settings → Devices & services → Add integration → Brother Network Label Printer**. Choose your printer model and enter its address.
 
 ## Print a label
 
