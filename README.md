@@ -16,7 +16,18 @@ Print labels from Home Assistant dashboards and automations. Use it for pantry l
 
 Install from Home Assistant Marketplace and restart Home Assistant. Then go to **Settings → Devices & services → Add integration → Brother Network Label Printer**. Choose your printer model and enter its address. Keep your existing entry when upgrading.
 
-[Label printing action](custom_components/brother_label_printer/services.yaml)
+## Print a label
+
+In Home Assistant, open **Developer Tools → Actions**, select **Brother Network Label Printer: Print label**, and choose your printer. The action can also run in an automation.
+
+```yaml
+action: brother_label_printer.print_label
+data:
+  config_entry_id: YOUR_PRINTER_CONFIG_ENTRY_ID
+  text: Pantry
+```
+
+[Label printing options](custom_components/brother_label_printer/services.yaml)
 
 ## Contributing
 
