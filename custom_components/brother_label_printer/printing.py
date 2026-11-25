@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import io
+import logging
+import socket
 
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 from brother_ql.conversion import convert
@@ -24,6 +26,35 @@ PT_TAPE_TYPES = {
     "24": ptouch.Tape24mm,
 }
 QL_MAX_WIDTH_PX = 696
+_LOGGER = logging.getLogger(__name__)
+# Debian/Ubuntu and Alpine (Home Assistant OS) install DejaVu in different places.
+_FONT_DIRS = (
+    "/usr/share/fonts/truetype/dejavu",
+    "/usr/share/fonts/dejavu",
+    "/usr/share/fonts/TTF",
+    "/usr/share/fonts/truetype/liberation2",
+    "/usr/share/fonts/liberation",
+)
+_FONT_FILES = {
+    ("sans", False): ("DejaVuSans.ttf", "LiberationSans-Regular.ttf"),
+    ("sans", True): ("DejaVuSans-Bold.ttf", "LiberationSans-Bold.ttf"),
+    ("serif", False): ("DejaVuSerif.ttf", "LiberationSerif-Regular.ttf"),
+    ("serif", True): ("DejaVuSerif-Bold.ttf", "LiberationSerif-Bold.ttf"),
+    ("mono", False): ("DejaVuSansMono.ttf", "LiberationMono-Regular.ttf"),
+    ("mono", True): ("DejaVuSansMono-Bold.ttf", "LiberationMono-Bold.ttf"),
+}
+_warned_missing_fonts = False
+
+
+def _ensure_reachable(host: str, port: int, timeout: float = 5.0) -> None:
+    """Fail fast when the printer is off; the QL library connects without a timeout."""
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            pass
+    except OSError as err:
+        raise ConnectionError(
+            f"The printer at {host}:{port} is not reachable. Check that it is on and connected."
+        ) from err
 
 
 def _font(
@@ -34,29 +65,19 @@ def _font(
             return ImageFont.truetype(io.BytesIO(font_data), size=size)
         except OSError as err:
             raise ValueError(f"Could not load the selected font file: {err}") from err
-    families = {
-        "sans": (
-            ("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf")
-            if bold
-            else ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf")
-        ),
-        "serif": (
-            ("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf", "/usr/share/fonts/truetype/liberation2/LiberationSerif-Bold.ttf")
-            if bold
-            else ("/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf", "/usr/share/fonts/truetype/liberation2/LiberationSerif-Regular.ttf")
-        ),
-        "mono": (
-            ("/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf", "/usr/share/fonts/truetype/liberation2/LiberationMono-Bold.ttf")
-            if bold
-            else ("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", "/usr/share/fonts/truetype/liberation2/LiberationMono-Regular.ttf")
-        ),
-    }
-    paths = families[family]
-    for path in paths:
-        try:
-            return ImageFont.truetype(path, size=size)
-        except OSError:
-            continue
+    global _warned_missing_fonts
+    for name in _FONT_FILES[(family, bold)]:
+        for directory in _FONT_DIRS:
+            try:
+                return ImageFont.truetype(f"{directory}/{name}", size=size)
+            except OSError:
+                continue
+    if not _warned_missing_fonts:
+        _warned_missing_fonts = True
+        _LOGGER.warning(
+            "No DejaVu or Liberation fonts found; using Pillow's built-in font, so the "
+            "font and bold choices have no effect. Set font_path to a .ttf in /config/www."
+        )
     try:
         return ImageFont.load_default(size=size)
     except TypeError:  # Pillow before size-aware default fonts.
@@ -451,6 +472,7 @@ def print_label_job(
                 else _prepare_pt_image(_open_image(image_data or b""), tape_width)
             )
         )
+        _ensure_reachable(host, port)
         connection = ConnectionNetwork(host, port=port)
         try:
             printer = PTE550W(connection)
@@ -474,6 +496,7 @@ def print_label_job(
             else _prepare_ql_image(_open_image(image_data or b""), label_size)
         )
     )
+    _ensure_reachable(host, port)
     qlr = BrotherQLRaster(QL_MODEL)
     instructions = convert(
         qlr,

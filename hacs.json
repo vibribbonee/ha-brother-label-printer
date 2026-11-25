@@ -1,3 +1,4 @@
 {
-  "name": "Brother Network Label Printer"
+  "name": "Brother Network Label Printer",
+  "homeassistant": "2024.12.0"
 }

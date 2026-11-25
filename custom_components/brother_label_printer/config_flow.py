@@ -152,3 +152,52 @@ class BrotherLabelPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }
         )
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
+
+    async def async_step_reconfigure(self, user_input=None):
+        """Change the address or the loaded media without re-adding the printer."""
+        entry = self._get_reconfigure_entry()
+        errors = {}
+        if user_input is not None:
+            host = user_input[CONF_HOST].strip()
+            port = int(user_input[CONF_PORT])
+            if not await _can_connect(host, port):
+                errors["base"] = "cannot_connect"
+            else:
+                unique_id = f"{host.lower()}:{port}"
+                if any(
+                    other.unique_id == unique_id and other.entry_id != entry.entry_id
+                    for other in self._async_current_entries()
+                ):
+                    return self.async_abort(reason="already_configured")
+                return self.async_update_reload_and_abort(
+                    entry,
+                    unique_id=unique_id,
+                    data_updates={
+                        CONF_HOST: host,
+                        CONF_PORT: port,
+                        CONF_LABEL_SIZE: user_input[CONF_LABEL_SIZE],
+                        CONF_TAPE_WIDTH_MM: user_input[CONF_TAPE_WIDTH_MM],
+                    },
+                )
+        data = entry.data
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_HOST, default=data[CONF_HOST]): TextSelector(),
+                vol.Required(CONF_PORT, default=data[CONF_PORT]): NumberSelector(
+                    NumberSelectorConfig(min=1, max=65535, mode=NumberSelectorMode.BOX)
+                ),
+                vol.Required(CONF_LABEL_SIZE, default=data.get(CONF_LABEL_SIZE, DEFAULT_QL_MEDIA)): SelectSelector(
+                    SelectSelectorConfig(
+                        options=[{"value": size, "label": f"{size} mm/media"} for size in QL_MEDIA],
+                        mode=SelectSelectorMode.DROPDOWN,
+                    )
+                ),
+                vol.Required(CONF_TAPE_WIDTH_MM, default=data.get(CONF_TAPE_WIDTH_MM, DEFAULT_PT_TAPE_MM)): SelectSelector(
+                    SelectSelectorConfig(
+                        options=[{"value": width, "label": f"{width} mm TZe tape"} for width in PT_TAPE_WIDTHS],
+                        mode=SelectSelectorMode.DROPDOWN,
+                    )
+                ),
+            }
+        )
+        return self.async_show_form(step_id="reconfigure", data_schema=schema, errors=errors)

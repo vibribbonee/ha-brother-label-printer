@@ -16,6 +16,16 @@
       "confirm": {
         "title": "Add discovered Brother printer",
         "description": "Add {name} to Home Assistant?"
+      },
+      "reconfigure": {
+        "title": "Change printer settings",
+        "description": "Update the printer's address after a network change, or the media loaded by default.",
+        "data": {
+          "host": "Host or IP address",
+          "port": "TCP port",
+          "label_size": "Default QL DK label media",
+          "tape_width_mm": "Default PT TZe tape width"
+        }
       }
     },
     "error": {
@@ -23,7 +33,8 @@
     },
     "abort": {
       "already_configured": "This printer is already configured.",
-      "unsupported_device": "This Brother printer model is not supported."
+      "unsupported_device": "This Brother printer model is not supported.",
+      "reconfigure_successful": "The printer settings were updated."
     }
   },
   "exceptions": {
