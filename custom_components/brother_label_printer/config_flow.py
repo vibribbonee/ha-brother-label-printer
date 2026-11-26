@@ -24,6 +24,7 @@ except ImportError:  # Home Assistant before the 2026.1 service-info move.
     from homeassistant.components.zeroconf import ZeroconfServiceInfo
 
 from .const import (
+    CONF_ZEROCONF_NAME,
     CONF_LABEL_SIZE,
     CONF_PRINTER_MODEL,
     CONF_TAPE_WIDTH_MM,
@@ -75,6 +76,8 @@ class BrotherLabelPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         host = str(discovery_info.host)
         port = discovery_info.port
+        if (moved := self._async_follow_known_printer(discovery_info.name, host, port)) is not None:
+            return moved
         await self.async_set_unique_id(f"{host.lower()}:{port}")
         self._abort_if_unique_id_configured()
         name = f"{model} at {host}"
@@ -86,8 +89,32 @@ class BrotherLabelPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             CONF_PRINTER_MODEL: model,
             CONF_LABEL_SIZE: DEFAULT_QL_MEDIA,
             CONF_TAPE_WIDTH_MM: DEFAULT_PT_TAPE_MM,
+            CONF_ZEROCONF_NAME: discovery_info.name,
         }
         return await self.async_step_confirm()
+
+    def _async_follow_known_printer(self, service_name: str, host: str, port: int):
+        """Keep a configured printer on its current address.
+
+        The mDNS service name stays the same when DHCP hands out a new IP.
+        Learn it while the printer is still at its saved address, then use it
+        to move the entry instead of offering the printer as a new device.
+        """
+        for entry in self._async_current_entries(include_ignore=False):
+            data = entry.data
+            same_name = data.get(CONF_ZEROCONF_NAME) == service_name
+            same_address = data.get(CONF_HOST) == host and int(data.get(CONF_PORT, 0)) == port
+            if not (same_name or same_address):
+                continue
+            if same_name and same_address:
+                return self.async_abort(reason="already_configured")
+            return self.async_update_reload_and_abort(
+                entry,
+                unique_id=f"{host.lower()}:{port}",
+                data_updates={CONF_HOST: host, CONF_PORT: port, CONF_ZEROCONF_NAME: service_name},
+                reason="already_configured",
+            )
+        return None
 
     async def async_step_confirm(self, user_input=None):
         """Confirm adding the discovered printer."""

@@ -19,3 +19,6 @@ QL_MEDIA = (
 )
 PT_TAPE_WIDTHS = ("3.5", "6", "9", "12", "18", "24")
 SERVICE_PRINT_LABEL = "print_label"
+
+# mDNS service name; stays the same when the printer gets a new IP.
+CONF_ZEROCONF_NAME = "zeroconf_name"
